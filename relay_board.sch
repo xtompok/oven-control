@@ -179,16 +179,15 @@ LIBS:Transistor_IGBT
 LIBS:Triac_Thyristor
 LIBS:Valve
 LIBS:Video
-LIBS:relay_board-cache
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
-Date ""
-Rev ""
-Comp ""
+Title "Oven control - Relay board"
+Date "2018-06-17"
+Rev "0.01"
+Comp "Jethro"
 Comment1 ""
 Comment2 ""
 Comment3 ""

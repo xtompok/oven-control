@@ -1,4 +1,4 @@
-update=Ne 3. červen 2018, 22:44:33 CEST
+update=Ne 17. června 2018, 18:02:16 CEST
 version=1
 last_client=kicad
 [pcbnew]
@@ -27,7 +27,7 @@ NetIExt=net
 version=1
 [eeschema]
 version=1
-LibDir=/home/jethro/kicad-libraries/kicad-symbols
+LibDir=/home/jethro/Programy/kicad/kicad-symbols
 [eeschema/libraries]
 LibName1=4xxx
 LibName2=4xxx_IEEE
