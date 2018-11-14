@@ -13,6 +13,7 @@ for i in range(2):
 
 while True:
 	ser.reset_input_buffer()
+	ser.readline()
 	line = ser.readline().strip()[:-1]
 	data = dict([part.split(":") for part in line.decode("utf-8").split(";")])
 	print(data)
