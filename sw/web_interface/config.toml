@@ -1,0 +1,2 @@
+port = "/dev/ttyUSB4"
+log = "temp.log"
