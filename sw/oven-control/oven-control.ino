@@ -5,6 +5,7 @@
 #define BACK_FAN  3
 #define DOOR_FAN  6
 #define LIGHT     7
+#define NOT_USED  2
 
 bool s_top_small;
 bool s_top_big;
@@ -68,6 +69,8 @@ void setup() {
   pinMode(BACK_FAN,OUTPUT);
   pinMode(DOOR_FAN,OUTPUT);
   pinMode(LIGHT,OUTPUT);
+  pinMode(NOT_USED,OUTPUT);
+  digitalWrite(NOT_USED,false);
 
   Serial.begin(115200);
   Serial.println("Booting...");
