@@ -9,15 +9,17 @@
 	<li>Odhadovaná teplota: {{data.temp}}
 	<li>Nastavená teplota: {{temp}}
 </ul>
+<button type="button" onclick="window.open('/?light=1','_self')">Zapnout světlo</button>
+<button type="button" onclick="window.open('/?light=0','_self')">Vypnout světlo</button>
 <h2> Relé </h2>
 <ul>
-	<li>Horní malá: {{data.TS}} 
-	<li>Horní velká: {{data.TB}}
-	<li>Zadní: {{data.BACK}}
-	<li>Spodní: {{data.BOT}}
-	<li>Zadní větrák: {{data.BF}}
-	<li>Větrák dveří: {{data.DF}}
-	<li>Světlo: {{data.L}} 
+	<li>Horní malá: {{data.top_small}} 
+	<li>Horní velká: {{data.top_big}}
+	<li>Zadní: {{data.back}}
+	<li>Spodní: {{data.bottom}}
+	<li>Zadní větrák: {{data.back_fan}}
+	<li>Větrák dveří: {{data.door_fan}}
+	<li>Světlo: {{data.light}} 
 </ul>
 <button type="button" onclick="window.open('/?temp=-100','_self')">Vypnout</button><br />
 <button type="button" onclick="window.open('/?temp=120','_self')">120</button>
