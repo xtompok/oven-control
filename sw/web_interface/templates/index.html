@@ -1,36 +1,52 @@
 <html>
 <head>
-<meta http-equiv="refresh" content="5" >
+ <link rel="stylesheet" type="text/css" href="/static/style.css">
+ <script
+			  src="https://code.jquery.com/jquery-3.3.1.min.js"
+			  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+			  crossorigin="anonymous"></script>
+ <script src="/static/script.js"></script>
 </head>
 <body>
-<h1> Trouba </h1>
-<h2> Teploty </h2>
-<ul>
-	<li>Odhadovaná teplota: {{data.temp}}
-	<li>Nastavená teplota: {{temp}}
-</ul>
-<button type="button" onclick="window.open('/?light=1','_self')">Zapnout světlo</button>
-<button type="button" onclick="window.open('/?light=0','_self')">Vypnout světlo</button>
-<h2> Relé </h2>
-<ul>
-	<li>Horní malá: {{data.top_small}} 
-	<li>Horní velká: {{data.top_big}}
-	<li>Zadní: {{data.back}}
-	<li>Spodní: {{data.bottom}}
-	<li>Zadní větrák: {{data.back_fan}}
-	<li>Větrák dveří: {{data.door_fan}}
-	<li>Světlo: {{data.light}} 
-</ul>
-<button type="button" onclick="window.open('/?temp=-100','_self')">Vypnout</button><br />
-<button type="button" onclick="window.open('/?temp=120','_self')">120</button>
-<button type="button" onclick="window.open('/?temp=150','_self')">150</button>
-<button type="button" onclick="window.open('/?temp=180','_self')">180</button>
-<button type="button" onclick="window.open('/?temp=200','_self')">200</button>
-<button type="button" onclick="window.open('/?temp=220','_self')">220</button>
-<button type="button" onclick="window.open('/?temp=250','_self')">250</button>
-<form action="/" method="get">
-Teplota: <input type="text" name="temp" value="175">
-<input type="submit" value="Nastavit">
+
+<h1 class="background" > Trouba </h1>
+<div class="column-container">
+<div class="container">
+<button type="button" class="on light" onclick="set_light(1)">Zapnout světlo</button>
+<button type="button" class="off light" onclick="set_light(0)">Vypnout světlo</button>
+</div>
+
+<div class="container">
+	<div class="element temp">Odhad: <span><span id="act_temp"></span> °C</span></div>
+	<div class="element temp">Nastaveno:  <span><span id="set_temp"></span> °C</span></div>
+</div>
+
+<div class="container background">
+<button type="button" class="temp-button" onclick="set_temp(120)">120</button>
+<button type="button" class="temp-button" onclick="set_temp(150)">150</button>
+<button type="button" class="temp-button" onclick="set_temp(180)">180</button>
+<button type="button" class="temp-button" onclick="set_temp(200)">200</button>
+<button type="button" class="temp-button" onclick="set_temp(220)">220</button>
+<button type="button" class="temp-button" onclick="set_temp(250)">250</button>
+
+<form id="temp_form">
+<div>
+<input type="text" name="temp"  id="temp_input" value="175">
+<input class="temp-button" type="submit" value="Nastavit">
+</div>
 </form>
+<button type="button" class="temp-button" id="off-button" onclick="set_temp(-100)">Vypnout</button>
+</div>
+
+<div class="container">
+	<div class="element">Horní malá <span id="status_ts"></span></div>
+	<div class="element">Horní velká <span id="status_tb"></span></div>
+	<div class="element">Zadní <span id="status_back"></span></div>
+	<div class="element">Spodní <span id="status_bot"></span></div>
+	<div class="element">Zadní větrák <span id="status_bf"></span></div>
+	<div class="element">Větrák dveří <span id="status_df"></span></div>
+	<div class="element">Světlo <span id="status_light"></span></div>
+</div>
+</div>
 </body>
 </html>

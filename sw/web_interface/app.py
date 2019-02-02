@@ -6,7 +6,7 @@ import queue
 import time
 import toml
 import json
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from driver_worker import DriverWorker
 from oven_data import OvenStatusIn, OvenHeatingOut 
 
@@ -39,13 +39,24 @@ def get_last_data():
 		elif type(msg) == OvenStatusIn:		
 			log.write(str(msg)+"\n")
 			data = msg
-			print(data)
 
 @app.route('/')
 def index():
+	get_last_data()
+	return render_template('index.html')
+
+@app.route('/status.json')
+def status():
+	get_last_data()
+	return jsonify(data.to_dict())
+
+@app.route('/req.json')
+def req():
+	return jsonify({"set_temp":temp})
+
+@app.route('/set/temp/<new_temp>')
+def set_temp(new_temp):
 	global temp
-	
-	new_temp = request.args.get('temp')
 	if temp:
 		try:
 			new_temp = int(new_temp)
@@ -53,18 +64,19 @@ def index():
 			tempq.put(temp)
 		except:
 			print("Invalid temp {}".format(new_temp))
+	return "",200
 	
-	light = request.args.get('light')
+@app.route('/set/light/<light>')
+def set_light(light):
 	if light == "1":
 		lightq.put(True)
 	elif light == "0":
 		lightq.put(False)
-
-
-	get_last_data()
-	return render_template('index.html',data=data,temp=temp)
+	return "",200
+	
 
 if __name__ == "__main__":
 	tempq.put(-100)
 	driver.start()
 	app.run(threaded=True,processes=1,use_reloader=False,host='0.0.0.0')
+

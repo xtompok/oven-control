@@ -1,4 +1,5 @@
 import time 
+import json
 class OvenStatusIn(object):
 
 	def calc_temp(self,num):
@@ -17,15 +18,20 @@ class OvenStatusIn(object):
 		self.door_fan = bool(int(data["DF"]))
 	
 	def __str__(self):
+		return str(self.to_dict())
+
+	def to_dict(self):
 		data = {"time":self.time,
 			"temp":self.temp,
 			"light":self.light,
 			"top_big":self.top_big,
 			"top_small":self.top_small,
 			"back":self.back,
+			"back_fan":self.back_fan,
 			"bottom":self.bottom,
 			"door_fan":self.door_fan}
-		return str(data)
+		return data
+		
 
 class OvenHeatingOut(object):
 	def __init__(self,instatus=None):

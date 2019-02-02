@@ -1,4 +1,5 @@
-import serial
+#from serial.rfc2217 import Serial
+from serial import Serial
 import threading
 import queue
 import time
@@ -23,10 +24,10 @@ class DriverWorker(threading.Thread):
 
 	def toggle_door_fan(self):
 		# Turn on at 50 deg C or higher
-		if self.status.temp > 50 and self.status.door_fan == "0":
+		if self.status.temp > 50 and not self.status.door_fan:
 			self.ser.write(b"d")
 		# Turn off at 50 deg C or lower
-		if self.status.temp < 50 and self.status.door_fan == "1":
+		if self.status.temp < 50 and self.status.door_fan:
 			self.ser.write(b"d")
 	
 	def toggle_light(self):
@@ -46,7 +47,7 @@ class DriverWorker(threading.Thread):
 			self.ser.write(b"b")
 	
 	def run(self):
-		self.ser = serial.Serial(self.port,baudrate=115200)
+		self.ser = Serial(self.port,baudrate=115200)
 		print("Port opened")
 		for i in range(2):
 			self.ser.readline()
