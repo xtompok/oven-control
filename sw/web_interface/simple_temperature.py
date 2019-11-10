@@ -1,4 +1,4 @@
-from oven_data import OvenStatusIn, OvenHeatingOut 
+from oven_data import OvenStatusIn, Spirals 
 
 class SimpleTemperature(object):
 	def __init__(self):
@@ -8,7 +8,7 @@ class SimpleTemperature(object):
 		self.temp = temperature
 	
 	def get_heating(self,data):	 
-		out = OvenHeatingOut()
+		out = Spirals()
 		if data.temp > self.temp:
 			return out
 		if data.temp < (self.temp - 15):

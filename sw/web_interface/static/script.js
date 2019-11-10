@@ -2,145 +2,117 @@ var status_ts = $("#status_ts");
 var status_tb = $("#status_tb");
 var status_back = $("#status_back");
 var status_bot = $("#status_bot");
+var enabled_ts = $("#enabled_ts");
+var enabled_tb = $("#enabled_tb");
+var enabled_back = $("#enabled_back");
+var enabled_bot = $("#enabled_bot");
 var status_bf = $("#status_bf");
 var status_df = $("#status_df");
 var status_light = $("#status_light");
-var act_temp_elem = {};
-var set_temp_elem = {};
+var act_temp_elem = $("#act_temp");
+var set_temp_elem = $("#set_temp");
+var mqtt_prefix = "/oven";
+var ip = "192.168.0.54";
+var port = 9001;
 
-function update_status_elements(data){
-	if (data.top_big){
-		status_tb.text("ON");	
-		status_tb.removeClass();
-		status_tb.addClass("on");
-	} else {
-		status_tb.text("OFF");	
-		status_tb.removeClass();
-		status_tb.addClass("off");
-	}	
-	if (data.top_small){
-		status_ts.text("ON");	
-		status_ts.removeClass();
-		status_ts.addClass("on");
-	} else {
-		status_ts.text("OFF");	
-		status_ts.removeClass();
-		status_ts.addClass("off");
-	}	
-	if (data.back){
-		status_back.text("ON");	
-		status_back.removeClass();
-		status_back.addClass("on");
-	} else {
-		status_back.text("OFF");	
-		status_back.removeClass();
-		status_back.addClass("off");
-	}	
-	if (data.bottom){
-		status_bot.text("ON");	
-		status_bot.removeClass();
-		status_bot.addClass("on");
-	} else {
-		status_bot.text("OFF");	
-		status_bot.removeClass();
-		status_bot.addClass("off");
-	}	
-	if (data.back_fan){
-		status_bf.text("ON");	
-		status_bf.removeClass();
-		status_bf.addClass("on");
-	} else {
-		status_bf.text("OFF");	
-		status_bf.removeClass();
-		status_bf.addClass("off");
-	}	
-	if (data.door_fan){
-		status_df.text("ON");	
-		status_df.removeClass();
-		status_df.addClass("on");
-	} else {
-		status_df.text("OFF");	
-		status_df.removeClass();
-		status_df.addClass("off");
-	}	
-	if (data.light){
-		status_light.text("ON");	
-		status_light.removeClass();
-		status_light.addClass("on");
-	} else {
-		status_light.text("OFF");	
-		status_light.removeClass();
-		status_light.addClass("off");
-	}	
-	act_temp_elem.text(Math.round(data.temp));
+function onConnect(){
+	console.log("Connected to MQTT broker");
+	client.subscribe(mqtt_prefix+"/#");
 }
-function update_req_elements(data){
-	if (data.set_temp > 0){
-		set_temp_elem.text(data.set_temp);
+
+function setElement(elem,on){
+	if (parseInt(on) == 1){
+		console.log(elem);
+		console.log("1");
+		elem.text("ON");	
+		elem.removeClass();
+		elem.addClass("on");
 	} else {
-		set_temp_elem.text("---");	
+		elem.text("OFF");	
+		elem.removeClass();
+		elem.addClass("off");
 	}
 }
 
-
-function update_status() {
-	status_ts = $("#status_ts");
-	status_tb = $("#status_tb");
-	status_back = $("#status_back");
-	status_bot = $("#status_bot");
-	status_bf = $("#status_bf");
-	status_df = $("#status_df");
-	status_light = $("#status_light");
-	act_temp_elem = $("#act_temp");
-	var poll = function() {
-		$.ajax({
-			url: 'status.json',
-			dataType: 'json',
-			type: 'get',
-			success: update_status_elements,
-			error: function() { // error logging
-				console.log('Error!');
-			}
-		});
-	};
-
-	pollInterval = setInterval(function() { // run function every 2000 ms
-		poll();
-		}, 2000);
-	poll(); // also run function on init
+function onMessage(msg){
+	topic = msg.topic.substring(mqtt_prefix.length);
+	switch (topic){
+		case '/temp':
+			act_temp_elem.text(Math.round(parseFloat(msg.payloadString)));
+			break;
+		case '/set_temp':
+			set_temp_elem.text(Math.round(parseFloat(msg.payloadString)));
+			break;
+		case '/light':
+			setElement(status_light,msg.payloadString);
+			break;
+		case '/spirals/top_big':
+			setElement(status_tb,msg.payloadString);
+			break;
+		case '/spirals/top_small':
+			setElement(status_ts,msg.payloadString);
+			break;
+		case '/spirals/back':
+			setElement(status_back,msg.payloadString);
+			break;
+		case '/spirals/bottom':
+			setElement(status_bot,msg.payloadString);
+			break;
+		case '/back_fan':
+			setElement(status_bf,msg.payloadString);
+			break;
+		case '/door_fan':
+			console.log("DoorFan");
+			setElement(status_df,msg.payloadString);
+			break;
+	
+	}
 }
 
-function update_requirements() {
-	set_temp_elem = $("#set_temp");
-	var poll = function() {
-		$.ajax({
-			url: 'req.json',
-			dataType: 'json',
-			type: 'get',
-			success: update_req_elements,
-			error: function() { // error logging
-				console.log('Error!');
-			}
-		});
-	};
+function onConnectionLost(responseObject) {
+	if (responseObject.errorCode !== 0) {
+		console.log("onConnectionLost:" + responseObject.errorMessage);
+	}
+}
 
-	pollInterval = setInterval(function() { // run function every 2000 ms
-		poll();
-		}, 2000);
-	poll(); // also run function on init
+function connectMQTT(){
+	client = new Paho.MQTT.Client(ip, Number(port),"clientjs");
+	client.onConnectionLost = onConnectionLost;
+	client.onMessageArrived = onMessage;
+	client.connect({
+		//userName: username,
+		//password: password,
+		//useSSL: usessl,
+		onSuccess: onConnect,
+		//onFailure: onFailure,
+		reconnect: true
+	});
 }
 
 function set_temp(temp){
-	$.get('/set/temp/'+temp);	
+	client.publish('/oven/temp/set',temp.toString());
 }
 
 function set_light(light){
-	$.get('/set/light/'+light);		
+	client.publish('/oven/light/set',light.toString());
 }
 
 window.onload=function(){
-		update_status();
-		update_requirements();
+		status_ts = $("#status_ts");
+		status_tb = $("#status_tb");
+		status_back = $("#status_back");
+		status_bot = $("#status_bot");
+		enabled_ts = $("#enabled_ts");
+		enabled_tb = $("#enabled_tb");
+		enabled_back = $("#enabled_back");
+		enabled_bot = $("#enabled_bot");
+		status_bf = $("#status_bf");
+		status_df = $("#status_df");
+		status_light = $("#status_light");
+		act_temp_elem = $("#act_temp");
+		set_temp_elem = $("#set_temp");
+
+		connectMQTT();
 		$("#temp_form").on('submit', function(){
 			set_temp($("#temp_input").val());
 			return false;

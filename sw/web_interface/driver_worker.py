@@ -3,26 +3,27 @@ from serial import Serial
 import threading
 import queue
 import time
-from oven_data import OvenStatusIn, OvenHeatingOut 
+from oven_data import OvenStatusIn, Spirals
 from simple_temperature import SimpleTemperature
+import paho.mqtt.client as mqtt
 
 
 
-class DriverWorker(threading.Thread):
+class DriverWorker(object):
 
-	def __init__(self,port,tempq,statusq,lightq):
+	def __init__(self,port):
 		super(DriverWorker,self).__init__()
 		self.port = port
 		self.ser = None
-		self.tempq = tempq
-		self.statusq = statusq
-		self.lightq = lightq
-		self.stoprequest = threading.Event()
-		self.status = None
+		self.set_temp = 0
 		self.light = True
+		self.spirals_enabled = Spirals(default=True)
+		self.mqtt_prefix = "/oven"
+
+		self.status = None
 
 
-	def toggle_door_fan(self):
+	def manage_door_fan(self):
 		# Turn on at 50 deg C or higher
 		if self.status.temp > 50 and not self.status.door_fan:
 			self.ser.write(b"d")
@@ -30,21 +31,41 @@ class DriverWorker(threading.Thread):
 		if self.status.temp < 50 and self.status.door_fan:
 			self.ser.write(b"d")
 	
-	def toggle_light(self):
-		while not self.lightq.empty():
-			self.light = self.lightq.get()
+	def manage_light(self):
 		if self.status.light != self.light:
 			self.ser.write(b"l")
 
-	def toggle_heating(self,heatout):
-		if self.status.top_big != heatout.top_big:
+	#FIXME use only enabled spirals
+	def manage_heating(self,heatout):
+		status = self.status.spirals
+		if status.top_big != heatout.top_big:
 			self.ser.write(b"T")
-		if self.status.top_small != heatout.top_small:
+		if status.top_small != heatout.top_small:
 			self.ser.write(b"t")
-		if self.status.back != heatout.back:
+		if status.back != heatout.back:
 			self.ser.write(b"z")
-		if self.status.bottom != heatout.bottom:
+		if status.bottom != heatout.bottom:
 			self.ser.write(b"b")
+	
+	def on_connect(self,client,userdata,flags,rc):
+		print("Connected to MQTT server")
+		client.subscribe(self.mqtt_prefix+"/temp/set")
+		client.subscribe(self.mqtt_prefix+"/enabled_elements/set")
+		client.subscribe(self.mqtt_prefix+"/mode/set")
+		client.subscribe(self.mqtt_prefix+"/profile/set")
+		client.subscribe(self.mqtt_prefix+"/light/set")
+	
+	def on_message(self,client,userdata,msg):
+		if msg.topic == self.mqtt_prefix+"/temp/set":
+			self.set_temp = int(msg.payload)
+		elif msg.topic == self.mqtt_prefix+"/eabled_elements/set":
+			data = json.loads(msg.payload)
+			spirals = Spirals.from_dict(data)
+			self.spirals_enabled = spirals
+		elif msg.topic == self.mqtt_prefix+"/light/set":
+			self.light = bool(int(msg.payload))
+
+
 	
 	def run(self):
 		self.ser = Serial(self.port,baudrate=115200)
@@ -52,9 +73,14 @@ class DriverWorker(threading.Thread):
 		for i in range(2):
 			self.ser.readline()
 		temp_alg = SimpleTemperature() 
-		temp_alg.set_temp(self.tempq.get())
+		temp_alg.set_temp(self.set_temp)
+		client = mqtt.Client()
+		client.on_connect = self.on_connect
+		client.on_message = self.on_message
+		client.connect("localhost")
 
-		while not self.stoprequest.isSet():
+
+		while True:
 
 			self.ser.reset_input_buffer()
 			self.ser.write(b"k") # keepalive
@@ -68,19 +94,21 @@ class DriverWorker(threading.Thread):
 				continue
 			
 			self.status = OvenStatusIn(line)
-			self.statusq.put(self.status)
-			self.toggle_door_fan()
-			self.toggle_light()
-			
-			self.toggle_heating(temp_alg.get_heating(self.status))	
-			self.ser.flush()
-			if not self.tempq.empty():
-				temp_alg.set_temp(self.tempq.get())
-			time.sleep(1)
-		self.ser.close()
-	
-	def join(self,timeout=None):
-		self.stoprequest.set()
-		super(DriverWorker,self).join(timeout)
-	 
+			self.status.publish(client,self.mqtt_prefix)
+			client.publish(self.mqtt_prefix+"/set_temp",self.set_temp)
+			self.spirals_enabled.publish(client,self.mqtt_prefix+"/spirals/enabled")
 
+			self.manage_door_fan()
+			self.manage_light()
+			self.manage_heating(temp_alg.get_heating(self.status))	
+			
+			self.ser.flush()
+				
+			temp_alg.set_temp(self.set_temp)
+			client.loop(timeout=1.0)
+			time.sleep(0.5)
+	
+
+if __name__ == "__main__":
+	worker = DriverWorker("/dev/ttyUSB0")
+	worker.run()
