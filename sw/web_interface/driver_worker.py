@@ -27,8 +27,8 @@ class DriverWorker(object):
 		# Turn on at 50 deg C or higher
 		if self.status.temp > 50 and not self.status.door_fan:
 			self.ser.write(b"d")
-		# Turn off at 50 deg C or lower
-		if self.status.temp < 50 and self.status.door_fan:
+		# Turn off at 45 deg C or lower
+		if self.status.temp < 45 and self.status.door_fan:
 			self.ser.write(b"d")
 	
 	def manage_light(self):
