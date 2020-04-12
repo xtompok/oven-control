@@ -12,7 +12,7 @@ var status_light = $("#status_light");
 var act_temp_elem = $("#act_temp");
 var set_temp_elem = $("#set_temp");
 var mqtt_prefix = "/oven";
-var ip = "192.168.0.54";
+var ip = "192.168.0.55";
 var port = 9001;
 
 function onConnect(){
