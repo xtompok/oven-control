@@ -93,7 +93,13 @@ class DriverWorker(object):
 				self.ser.flush()
 				continue
 			
-			self.status = OvenStatusIn(line)
+            try:
+			    status = OvenStatusIn(line)
+            except ValueError:
+                pass # TODO handle errors
+            else:
+                self.status = status
+
 			self.status.publish(client,self.mqtt_prefix)
 			client.publish(self.mqtt_prefix+"/set_temp",self.set_temp)
 			self.spirals_enabled.publish(client,self.mqtt_prefix+"/spirals/enabled")
