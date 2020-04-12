@@ -1,0 +1,12 @@
+[Unit]
+Description=Backend worker for oven control
+After=network.target
+
+[Service]
+WorkingDirectory=/home/pi/oven-control/sw/web_interface
+ExecStart=/home/pi/oven-control/sw/web_interface/venv/bin/python3 /home/pi/oven-control/sw/web_interface/driver_worker.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
