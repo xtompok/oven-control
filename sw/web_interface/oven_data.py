@@ -77,16 +77,19 @@ class Spirals(object):
 	@classmethod
 	def from_dict(cls,adict):
 		spirals = cls()
-		if adict["top_big"]:
+		if "top_big" in adict and adict["top_big"]:
 			spirals.top_big = True
-		if adict["top_small"]:
+		if "top_small" in adict and adict["top_small"]:
 			spirals.top_small = True
-		if adict["back"]:
+		if "back" in adict and adict["back"]:
 			spirals.back = True
-		if adict["bottom"]:
+		if "bottom" in adict and adict["bottom"]:
 			spirals.bottom = True
 
 		return spirals
+
+	def __str__(self):
+		return f"top_big: {self.top_big}, top_small: {self.top_small}, back: {self.back}, bottom: {self.bottom}"
 	
 	def publish(self,client,prefix):
 		client.publish(prefix+"/top_big",int(self.top_big))

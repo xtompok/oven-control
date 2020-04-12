@@ -5,6 +5,7 @@ import queue
 import time
 from oven_data import OvenStatusIn, Spirals
 from simple_temperature import SimpleTemperature
+from hysteresis_temperature import HysterTemperature
 import paho.mqtt.client as mqtt
 
 
@@ -15,7 +16,7 @@ class DriverWorker(object):
 		super(DriverWorker,self).__init__()
 		self.port = port
 		self.ser = None
-		self.set_temp = 0
+		self.set_temp = -100
 		self.light = True
 		self.spirals_enabled = Spirals(default=True)
 		self.mqtt_prefix = "/oven"
@@ -72,8 +73,7 @@ class DriverWorker(object):
 		print("Port opened")
 		for i in range(2):
 			self.ser.readline()
-		temp_alg = SimpleTemperature() 
-		temp_alg.set_temp(self.set_temp)
+		temp_alg = HysterTemperature(self.set_temp) 
 		client = mqtt.Client()
 		client.on_connect = self.on_connect
 		client.on_message = self.on_message

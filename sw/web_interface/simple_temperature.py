@@ -1,8 +1,8 @@
 from oven_data import OvenStatusIn, Spirals 
 
 class SimpleTemperature(object):
-	def __init__(self):
-		self.temp = None
+	def __init__(self, temp):
+		self.temp = temp
 	
 	def set_temp(self,temperature):
 		self.temp = temperature
