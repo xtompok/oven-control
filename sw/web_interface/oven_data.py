@@ -1,10 +1,17 @@
 import time 
 import json
+import math
 
 class OvenStatusIn(object):
 
 	def calc_temp(self,num):
-		return num*-1.65+808
+        try:
+		    temp = -270*math.log(num-227)+1528
+        except ValueError as e:
+            raise ValueError("Could not compute temperature!") from e
+        if temp < -270:
+            raise ValueError("Temperature too low!")
+        return temp
 	
 	def __init__(self,ovenstr):
 		data = dict([part.split(":") for part in ovenstr.decode("utf-8").split(";")])
