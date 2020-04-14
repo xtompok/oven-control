@@ -12,7 +12,7 @@ var status_light = $("#status_light");
 var act_temp_elem = $("#act_temp");
 var set_temp_elem = $("#set_temp");
 var mqtt_prefix = "/oven";
-var ip = "192.168.0.55";
+var ip = "192.168.0.31";
 var port = 9001;
 
 function onConnect(){
@@ -75,8 +75,18 @@ function onConnectionLost(responseObject) {
 	}
 }
 
+function makeid(length) {
+	var result           = '';
+	var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	var charactersLength = characters.length;
+	for ( var i = 0; i < length; i++ ) {
+		result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+	return result;
+}
+
 function connectMQTT(){
-	client = new Paho.MQTT.Client(ip, Number(port),"clientjs");
+	client = new Paho.MQTT.Client(ip, Number(port),"clientjs"+makeid(5));
 	client.onConnectionLost = onConnectionLost;
 	client.onMessageArrived = onMessage;
 	client.connect({
