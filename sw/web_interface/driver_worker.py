@@ -3,6 +3,7 @@ from serial import Serial
 import threading
 import queue
 import time
+import json
 from oven_data import OvenStatusIn, Spirals
 from simple_temperature import SimpleTemperature
 from hysteresis_temperature import HysterTemperature
@@ -15,13 +16,13 @@ class DriverWorker(object):
 	def __init__(self,port):
 		super(DriverWorker,self).__init__()
 		self.port = port
-		self.ser = None
+		self.ser: Serial = None
 		self.set_temp = -100
 		self.light = True
 		self.spirals_enabled = Spirals(default=True)
 		self.mqtt_prefix = "/oven"
 
-		self.status = None
+		self.status: OvenStatusIn = None
 
 
 	def manage_door_fan(self):
@@ -36,9 +37,9 @@ class DriverWorker(object):
 		if self.status.light != self.light:
 			self.ser.write(b"l")
 
-	#FIXME use only enabled spirals
-	def manage_heating(self,heatout):
+	def manage_heating(self,heatout: Spirals):
 		status = self.status.spirals
+
 		if status.top_big != heatout.top_big:
 			self.ser.write(b"T")
 		if status.top_small != heatout.top_small:
@@ -59,7 +60,7 @@ class DriverWorker(object):
 	def on_message(self,client,userdata,msg):
 		if msg.topic == self.mqtt_prefix+"/temp/set":
 			self.set_temp = int(msg.payload)
-		elif msg.topic == self.mqtt_prefix+"/eabled_elements/set":
+		elif msg.topic == self.mqtt_prefix+"/enabled_elements/set":
 			data = json.loads(msg.payload)
 			spirals = Spirals.from_dict(data)
 			self.spirals_enabled = spirals
@@ -105,7 +106,7 @@ class DriverWorker(object):
 
 			self.manage_door_fan()
 			self.manage_light()
-			self.manage_heating(temp_alg.get_heating(self.status))	
+			self.manage_heating(temp_alg.get_heating(self.status, self.spirals_enabled))	
 			
 			self.ser.flush()
 				

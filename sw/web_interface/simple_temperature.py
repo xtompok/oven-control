@@ -7,7 +7,7 @@ class SimpleTemperature(object):
 	def set_temp(self,temperature):
 		self.temp = temperature
 	
-	def get_heating(self,data):	 
+	def get_heating(self,data,enabled_spirals=None):	 
 		out = Spirals()
 		if data.temp > self.temp:
 			return out
@@ -15,9 +15,9 @@ class SimpleTemperature(object):
 			out.top_big = True
 			out.top_small = True
 			out.bottom = True
-			return out
+			return out if enabled_spirals is None else out.limited_by(enabled_spirals)
 		if data.temp < (self.temp - 5):
 			out.top_small = True
 			out.bottom = True
-			return out
-		return out
+			return out if enabled_spirals is None else out.limited_by(enabled_spirals)
+		return out if enabled_spirals is None else out.limited_by(enabled_spirals)

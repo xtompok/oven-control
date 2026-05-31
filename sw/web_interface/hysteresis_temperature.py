@@ -16,7 +16,7 @@ class HysterTemperature(object):
 		self.memindex = -1
 		self.setpoints = (
 				self.Setpoint(-15,Spirals.from_dict({"top_big":True,"top_small":True,"bottom":True})),
-				self.Setpoint(0,Spirals.from_dict({"top_big":False,"top_small":True,"bottom":True})),
+				self.Setpoint(-5,Spirals.from_dict({"top_big":True,"top_small":False,"bottom":True})),
 				self.Setpoint(self.INFINITY,Spirals()),
 				)
 	def __str__(self):
@@ -34,7 +34,7 @@ class HysterTemperature(object):
 	def set_temp(self,temperature):
 		self.temp = temperature
 	
-	def get_heating(self,data):
+	def get_heating(self,data,enabled_spirals=None):
 		tempdiff = data.temp - self.temp
 
 		if tempdiff > self.setpoints[-1].tempdiff:
@@ -56,4 +56,7 @@ class HysterTemperature(object):
 			index = self.get_setpoint_index(tempdiff+self.hysteresis)
 
 		self.memindex = index
-		return self.setpoints[index].spirals
+		spirals = self.setpoints[index].spirals
+		if enabled_spirals is None:
+			return spirals
+		return spirals.limited_by(enabled_spirals)

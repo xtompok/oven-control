@@ -1,5 +1,6 @@
 <html>
 <head>
+ <meta charset="UTF-8">
  <link rel="stylesheet" type="text/css" href="style.css">
  <script
 			  src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -40,10 +41,10 @@
 </div>
 
 <div class="container">
-	<div class="element">Horní malá <span id="status_ts"></span></div>
-	<div class="element">Horní velká <span id="status_tb"></span></div>
-	<div class="element">Zadní <span id="status_back"></span></div>
-	<div class="element">Spodní <span id="status_bot"></span></div>
+	<div class="element heating-element" id="row_ts"><button type="button" class="name-toggle name-enabled" id="name_ts">Horní malá</button> <span id="status_ts"></span></div>
+	<div class="element heating-element" id="row_tb"><button type="button" class="name-toggle name-enabled" id="name_tb">Horní velká</button> <span id="status_tb"></span></div>
+	<div class="element heating-element" id="row_bot"><button type="button" class="name-toggle name-enabled" id="name_bot">Spodní</button> <span id="status_bot"></span></div>
+	<div class="element heating-element" id="row_back"><button type="button" class="name-toggle name-enabled" id="name_back">Zadní</button> <span id="status_back"></span></div>
 	<div class="element">Zadní větrák <span id="status_bf"></span></div>
 	<div class="element">Větrák dveří <span id="status_df"></span></div>
 	<div class="element">Světlo <span id="status_light"></span></div>

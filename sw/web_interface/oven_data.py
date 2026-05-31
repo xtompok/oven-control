@@ -1,8 +1,17 @@
 import time 
 import json
 import math
+from dataclasses import dataclass, field, InitVar
 
-class OvenStatusIn(object):
+@dataclass
+class OvenStatusIn:
+	ovenstr: InitVar[bytes]
+	time: float = field(init=False)
+	temp: float = field(init=False)
+	light: bool = field(init=False)
+	spirals: "Spirals" = field(init=False)
+	back_fan: bool = field(init=False)
+	door_fan: bool = field(init=False)
 
 	def calc_temp(self,num):
 		try:
@@ -13,7 +22,7 @@ class OvenStatusIn(object):
 			raise ValueError("Temperature too low!")
 		return temp
 	
-	def __init__(self,ovenstr):
+	def __post_init__(self, ovenstr):
 		data = dict([part.split(":") for part in ovenstr.decode("utf-8").split(";")])
 		self.time = time.time()
 		self.temp = self.calc_temp(int(data["TEMP"]))
@@ -46,8 +55,16 @@ class OvenStatusIn(object):
 		return data
 		
 
-class Spirals(object):
-	def __init__(self,instatus=None,default=False,):
+@dataclass
+class Spirals:
+	instatus: InitVar["Spirals | None"] = None
+	default: InitVar[bool] = False
+	top_big: bool = field(init=False)
+	top_small: bool = field(init=False)
+	back: bool = field(init=False)
+	bottom: bool = field(init=False)
+
+	def __post_init__(self, instatus, default):
 		if instatus:
 			self.top_big = instatus.top_big
 			self.top_small = instatus.top_small
@@ -90,6 +107,14 @@ class Spirals(object):
 
 	def __str__(self):
 		return f"top_big: {self.top_big}, top_small: {self.top_small}, back: {self.back}, bottom: {self.bottom}"
+
+	def limited_by(self, enabled: "Spirals"):
+		limited = Spirals(instatus=self)
+		limited.top_big = limited.top_big and enabled.top_big
+		limited.top_small = limited.top_small and enabled.top_small
+		limited.back = limited.back and enabled.back
+		limited.bottom = limited.bottom and enabled.bottom
+		return limited
 	
 	def publish(self,client,prefix):
 		client.publish(prefix+"/top_big",int(self.top_big))
